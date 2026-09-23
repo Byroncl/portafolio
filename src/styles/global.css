@@ -58,12 +58,6 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
-/* Matches the two-row header on narrow phones (see Header.astro) */
-@media (max-width: 560px) {
-  html {
-    scroll-padding-top: 7.5rem;
-  }
-}
 
 body {
   background: var(--bg);

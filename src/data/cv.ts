@@ -367,14 +367,14 @@ export const audits: AuditPillar[] = [
 ];
 
 export interface Project {
-  name: string;
+  name: Record<Locale, string>;
   description: Record<Locale, string>;
   tags: string[];
 }
 
 export const projects: Project[] = [
   {
-    name: 'Ghost Recipes',
+    name: { es: 'Ghost Recipes', en: 'Ghost Recipes' },
     description: {
       es: 'Extensión publicada en el VS Code Marketplace para gestionar y reutilizar snippets y recetas de código directamente desde el editor.',
       en: 'Extension published on the VS Code Marketplace to manage and reuse code snippets and recipes directly from the editor.',
@@ -382,7 +382,7 @@ export const projects: Project[] = [
     tags: ['TypeScript', 'VS Code API'],
   },
   {
-    name: 'Processing-Port',
+    name: { es: 'Processing-Port', en: 'Processing-Port' },
     description: {
       es: 'Monitor de procesos para Windows escrito en Python: inspección de puertos y procesos activos desde una interfaz simple.',
       en: 'Windows process monitor written in Python: port and active-process inspection from a simple interface.',
@@ -390,7 +390,7 @@ export const projects: Project[] = [
     tags: ['Python', 'Windows'],
   },
   {
-    name: 'Roguelike',
+    name: { es: 'Roguelike', en: 'Roguelike' },
     description: {
       es: 'Juego web multijugador de exploración procedural construido con Phaser 3 y comunicación en tiempo real por WebSockets.',
       en: 'Multiplayer web game with procedural exploration, built with Phaser 3 and real-time WebSocket communication.',

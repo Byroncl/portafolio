@@ -19,9 +19,12 @@ const t = useT(locale);
       {
         projects.map((project, index) => (
           <article class="card reveal" style={`--reveal-delay: ${index * 0.1}s`}>
-            <h3>{project.name}</h3>
+            <h3>{project.name[locale]}</h3>
             <p>{project.description[locale]}</p>
-            <ul class="tags" aria-label={`${t('projects.techAria')} ${project.name}`}>
+            <ul
+              class="tags"
+              aria-label={`${t('projects.techAria')} ${project.name[locale]}`}
+            >
               {project.tags.map((tag) => (
                 <li class="tag">{tag}</li>
               ))}

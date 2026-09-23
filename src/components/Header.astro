@@ -24,7 +24,7 @@ const navItems = [
       >BC<span aria-hidden="true">.</span></a
     >
 
-    <nav aria-label={t('nav.aria')}>
+    <nav id="site-nav" aria-label={t('nav.aria')}>
       <ul class="nav-list">
         {
           navItems.map((item) => (
@@ -84,6 +84,19 @@ const navItems = [
         >
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
         </svg>
+      </button>
+
+      <button
+        id="nav-toggle"
+        class="nav-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="site-nav"
+        aria-label={t('nav.menu')}
+      >
+        <span class="bars" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
       </button>
     </div>
   </div>
@@ -230,33 +243,97 @@ const navItems = [
     display: none;
   }
 
-  @media (max-width: 640px) {
-    .nav-list {
-      gap: 0.9rem;
-    }
-
-    .nav-link {
-      font-size: 0.82rem;
-    }
+  /* --------------------------- Mobile menu ------------------------------ */
+  .nav-toggle {
+    display: none;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg-elevated);
+    cursor: pointer;
+    transition: border-color 0.25s ease;
   }
 
-  /* Narrow phones: nav drops to its own row instead of overflowing */
-  @media (max-width: 560px) {
-    .header-inner {
-      flex-wrap: wrap;
-      height: auto;
-      padding-block: 0.65rem;
-      row-gap: 0.35rem;
+  .nav-toggle:hover {
+    border-color: var(--line-strong);
+  }
+
+  .bars {
+    display: grid;
+    gap: 4px;
+    justify-items: center;
+  }
+
+  .bars span {
+    display: block;
+    width: 15px;
+    height: 1.6px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: transform 0.3s var(--ease-out), opacity 0.2s ease;
+  }
+
+  :global(.site-header.nav-open) .bars span:nth-child(1) {
+    transform: translateY(5.6px) rotate(45deg);
+  }
+
+  :global(.site-header.nav-open) .bars span:nth-child(2) {
+    opacity: 0;
+  }
+
+  :global(.site-header.nav-open) .bars span:nth-child(3) {
+    transform: translateY(-5.6px) rotate(-45deg);
+  }
+
+  @media (max-width: 760px) {
+    .nav-toggle {
+      display: grid;
     }
 
     nav {
-      order: 3;
-      width: 100%;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: color-mix(in srgb, var(--bg) 98%, transparent);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.3s ease, transform 0.3s var(--ease-out),
+        visibility 0.3s;
+    }
+
+    :global(.site-header.nav-open) nav {
+      visibility: visible;
+      opacity: 1;
+      transform: none;
     }
 
     .nav-list {
-      flex-wrap: wrap;
-      justify-content: center;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: 0.5rem 1.5rem 1rem;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 0.85rem 0;
+      font-size: 1rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-list li:last-child .nav-link {
+      border-bottom: none;
+    }
+
+    .nav-link::after {
+      display: none;
     }
   }
 </style>
@@ -291,6 +368,32 @@ const navItems = [
       // Storage unavailable (private mode); theme still applies for the session.
     }
     syncPressedState();
+  });
+
+  // Mobile navigation menu.
+  const header = document.querySelector('.site-header');
+  const navToggle = document.getElementById('nav-toggle');
+  const nav = document.getElementById('site-nav');
+
+  const setMenu = (open: boolean) => {
+    header?.classList.toggle('nav-open', open);
+    navToggle?.setAttribute('aria-expanded', String(open));
+  };
+
+  navToggle?.addEventListener('click', () => {
+    setMenu(!header?.classList.contains('nav-open'));
+  });
+
+  // Close after navigating to a section.
+  nav?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => setMenu(false));
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && header?.classList.contains('nav-open')) {
+      setMenu(false);
+      navToggle?.focus();
+    }
   });
 
   // Scroll progress bar, throttled to animation frames.
