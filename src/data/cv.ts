@@ -320,6 +320,52 @@ export function stackItemName(name: string, locale: Locale): string {
   return stackItemNames[name]?.[locale] ?? name;
 }
 
+export interface AuditPillar {
+  icon: string;
+  title: Record<Locale, string>;
+  description: Record<Locale, string>;
+}
+
+export const auditedSystems: Record<Locale, string[]> = {
+  es: ['Sistemas transaccionales', 'CRMs', 'Sistemas de facturación'],
+  en: ['Transactional systems', 'CRMs', 'Invoicing systems'],
+};
+
+export const audits: AuditPillar[] = [
+  {
+    icon: 'lucide:eye',
+    title: { es: 'Caja blanca', en: 'White box' },
+    description: {
+      es: 'Reviso el código por dentro: flujos, manejo de datos sensibles, controles de acceso y dependencias.',
+      en: 'I review the code from the inside: flows, sensitive data handling, access controls, and dependencies.',
+    },
+  },
+  {
+    icon: 'lucide:eye-off',
+    title: { es: 'Caja negra', en: 'Black box' },
+    description: {
+      es: 'Ataco la API desde afuera, sin conocimiento interno: autenticación, autorización, inyección y superficie expuesta.',
+      en: 'I attack the API from the outside, with no internal knowledge: authentication, authorization, injection, and exposed surface.',
+    },
+  },
+  {
+    icon: 'lucide:test-tube',
+    title: { es: 'Pruebas automatizadas', en: 'Automated testing' },
+    description: {
+      es: 'Suites unitarias, E2E y de penetración automatizadas, para que la auditoría sea repetible y no un evento único.',
+      en: 'Automated unit, E2E, and penetration suites, so the audit is repeatable rather than a one-off event.',
+    },
+  },
+  {
+    icon: 'lucide:shield-check',
+    title: { es: 'Normativas y documentación', en: 'Standards & documentation' },
+    description: {
+      es: 'Cada hallazgo queda documentado con severidad, evidencia y remediación, alineado a ISO 27001 y otras normativas.',
+      en: 'Every finding is documented with severity, evidence, and remediation, aligned with ISO 27001 and other standards.',
+    },
+  },
+];
+
 export interface Project {
   name: string;
   description: Record<Locale, string>;

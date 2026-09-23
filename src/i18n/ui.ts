@@ -6,6 +6,7 @@ export const defaultLocale: Locale = 'es';
 const es = {
   'nav.experience': 'Experiencia',
   'nav.systems': 'Sistemas',
+  'nav.audits': 'Auditorías',
   'nav.projects': 'Proyectos',
   'nav.stack': 'Stack',
   'nav.contact': 'Contacto',
@@ -23,6 +24,11 @@ const es = {
   'section.systems': 'Sistemas en acción',
   'section.systems.hint':
     'Diagramas interactivos de sistemas reales que diseñé y construí. Elegí uno y seguí el flujo.',
+  'section.audits': 'Auditorías y calidad',
+  'section.audits.hint':
+    'Auditorías de APIs de extremo a extremo: del análisis al informe, con hallazgos documentados y normativas verificables.',
+  'section.audits.audited': 'Alcance auditado',
+  'section.audits.filename': 'informe-auditoria.md',
   'section.projects': 'Proyectos open source',
   'section.stack': 'Stack técnico',
   'section.education': 'Educación y credenciales',
@@ -49,6 +55,7 @@ export type UIKey = keyof typeof es;
 const en: Record<UIKey, string> = {
   'nav.experience': 'Experience',
   'nav.systems': 'Systems',
+  'nav.audits': 'Audits',
   'nav.projects': 'Projects',
   'nav.stack': 'Stack',
   'nav.contact': 'Contact',
@@ -66,6 +73,11 @@ const en: Record<UIKey, string> = {
   'section.systems': 'Systems in action',
   'section.systems.hint':
     'Interactive diagrams of real systems I designed and built. Pick one and follow the flow.',
+  'section.audits': 'Audits & quality',
+  'section.audits.hint':
+    'End-to-end API audits: from analysis to report, with documented findings and verifiable standards.',
+  'section.audits.audited': 'Audited scope',
+  'section.audits.filename': 'audit-report.md',
   'section.projects': 'Open source projects',
   'section.stack': 'Tech stack',
   'section.education': 'Education & credentials',

@@ -1,0 +1,269 @@
+---
+import { Icon } from 'astro-icon/components';
+import { auditedSystems, audits } from '../data/cv';
+import SectionHeading from './SectionHeading.astro';
+import { resolveLocale, useT } from '../i18n/ui';
+
+const locale = resolveLocale(Astro.currentLocale);
+const t = useT(locale);
+---
+
+<section id="auditorias" class="section" aria-labelledby="auditorias-title">
+  <div class="container">
+    <SectionHeading
+      index="03"
+      title={t('section.audits')}
+      id="auditorias-title"
+    />
+
+    <p class="hint reveal">{t('section.audits.hint')}</p>
+
+    <div class="dossier reveal" style="--reveal-delay: 0.08s">
+      <div class="dossier-header">
+        <span class="dots" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+        <span class="filename">{t('section.audits.filename')}</span>
+        <span class="iso-badge">ISO 27001</span>
+      </div>
+
+      <ol class="rows">
+        {
+          audits.map((pillar, index) => (
+            <li
+              class="row reveal"
+              style={`--reveal-delay: ${0.12 + index * 0.07}s`}
+            >
+              <span class="row-index" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <div class="row-body">
+                <h3>
+                  <Icon
+                    name={pillar.icon}
+                    width="20"
+                    height="20"
+                    aria-hidden="true"
+                  />
+                  {pillar.title[locale]}
+                </h3>
+                <p>{pillar.description[locale]}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="scope reveal" style="--reveal-delay: 0.4s">
+        <span class="scope-label" id="scope-label">
+          {t('section.audits.audited')}
+        </span>
+        <ul class="scope-list" aria-labelledby="scope-label">
+          {
+            auditedSystems[locale].map((system) => (
+              <li class="scope-pill">{system}</li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hint {
+    max-width: 40rem;
+    color: var(--ink-soft);
+    margin-top: -1.5rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .dossier {
+    border: 1px solid var(--line-strong);
+    border-radius: 16px;
+    background: var(--bg-elevated);
+    overflow: hidden;
+  }
+
+  /* --------------------------- Header bar ------------------------------- */
+  .dossier-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 1.6rem;
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .dots {
+    display: inline-flex;
+    gap: 0.45rem;
+  }
+
+  .dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--accent-contrast);
+    opacity: 0.45;
+  }
+
+  .filename {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+  }
+
+  .iso-badge {
+    margin-left: auto;
+    padding: 0.25rem 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--accent-contrast) 55%, transparent);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  /* ------------------------------ Rows ---------------------------------- */
+  .rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .row {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    border-bottom: 1px solid var(--line);
+    transition: background-color 0.3s ease;
+  }
+
+  .row:nth-child(odd) {
+    border-right: 1px solid var(--line);
+  }
+
+  .row:nth-last-child(-n + 2) {
+    border-bottom: none;
+  }
+
+  .row::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--accent);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.3s var(--ease-out);
+  }
+
+  .row:hover {
+    background: var(--bg);
+  }
+
+  .row:hover::after {
+    transform: scaleY(1);
+  }
+
+  .row-index {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--line);
+    transition: color 0.3s ease;
+    user-select: none;
+  }
+
+  .row:hover .row-index {
+    color: var(--ink);
+  }
+
+  .row-body h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .row-body h3 :global(svg) {
+    flex-shrink: 0;
+    color: var(--ink);
+  }
+
+  .row-body p {
+    color: var(--ink-soft);
+    font-size: 0.94rem;
+    line-height: 1.6;
+  }
+
+  /* ------------------------------ Scope --------------------------------- */
+  .scope {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.2rem 1.6rem;
+    border-top: 1px solid var(--line-strong);
+    overflow-x: auto;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scope-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .scope-list {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .scope-pill {
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 720px) {
+    .rows {
+      grid-template-columns: 1fr;
+    }
+
+    .row:nth-child(odd) {
+      border-right: none;
+    }
+
+    .row:nth-last-child(-n + 2) {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .row:last-child {
+      border-bottom: none;
+    }
+  }
+</style>
