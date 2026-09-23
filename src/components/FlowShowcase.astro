@@ -1,0 +1,481 @@
+---
+import { Icon } from 'astro-icon/components';
+import { flows, type FlowEdge, type FlowNode } from '../data/flows';
+import SectionHeading from './SectionHeading.astro';
+import { resolveLocale, useT } from '../i18n/ui';
+
+const locale = resolveLocale(Astro.currentLocale);
+const t = useT(locale);
+
+// Default node box dimensions in SVG user units (viewBox 0 0 860 320).
+const W = 160;
+const H = 56;
+
+const width = (node: FlowNode) => node.w ?? W;
+const height = (node: FlowNode) => node.h ?? H;
+
+function edgePath(a: FlowNode, b: FlowNode): string {
+  const aw = width(a);
+  const ah = height(a);
+  const bw = width(b);
+  const bh = height(b);
+
+  if (b.x >= a.x + aw) {
+    // Target sits to the right: right edge → left edge.
+    const sx = a.x + aw;
+    const sy = a.y + ah / 2;
+    const tx = b.x;
+    const ty = b.y + bh / 2;
+    const mx = (sx + tx) / 2;
+    return `M ${sx} ${sy} C ${mx} ${sy}, ${mx} ${ty}, ${tx} ${ty}`;
+  }
+
+  if (a.x >= b.x + bw) {
+    // Target sits to the left: left edge → right edge.
+    const sx = a.x;
+    const sy = a.y + ah / 2;
+    const tx = b.x + bw;
+    const ty = b.y + bh / 2;
+    const mx = (sx + tx) / 2;
+    return `M ${sx} ${sy} C ${mx} ${sy}, ${mx} ${ty}, ${tx} ${ty}`;
+  }
+
+  // Overlapping columns: connect vertically between centers.
+  const acx = a.x + aw / 2;
+  const bcx = b.x + bw / 2;
+  const down = b.y >= a.y + ah;
+  const sy = down ? a.y + ah : a.y;
+  const ty = down ? b.y : b.y + bh;
+  const my = (sy + ty) / 2;
+  return `M ${acx} ${sy} C ${acx} ${my}, ${bcx} ${my}, ${bcx} ${ty}`;
+}
+
+function resolveEdgePath(flowKey: string, edge: FlowEdge): string {
+  if ('d' in edge) return edge.d;
+  const nodes = flows.find((f) => f.key === flowKey)!.nodes;
+  const a = nodes.find((n) => n.id === edge.from);
+  const b = nodes.find((n) => n.id === edge.to);
+  if (!a || !b) {
+    throw new Error(
+      `Unknown flow edge "${'from' in edge ? edge.from : ''} -> ${'to' in edge ? edge.to : ''}" in "${flowKey}"`
+    );
+  }
+  return edgePath(a, b);
+}
+
+// Long labels are compressed to the box's usable width instead of
+// overflowing the rect.
+const LABEL_PX_PER_CHAR = 7.4; // ~12.5px Space Grotesk semibold
+const SUB_PX_PER_CHAR = 6.1; // ~10px JetBrains Mono
+
+function fit(text: string, pxPerChar: number, node: FlowNode) {
+  const space = width(node) - (node.icon ? 52 : 28);
+  return text.length * pxPerChar > space
+    ? { textLength: space, lengthAdjust: 'spacingAndGlyphs' as const }
+    : {};
+}
+
+const textX = (node: FlowNode) => (node.icon ? 42 : 16);
+---
+
+<section id="sistemas" class="section" aria-labelledby="sistemas-title">
+  <div class="container">
+    <SectionHeading
+      index="02"
+      title={t('section.systems')}
+      id="sistemas-title"
+    />
+
+    <p class="hint reveal">{t('section.systems.hint')}</p>
+
+    <div
+      class="tabs reveal"
+      role="tablist"
+      aria-label={t('flows.tablistAria')}
+    >
+      {
+        flows.map((flow, i) => (
+          <button
+            class="tab"
+            role="tab"
+            type="button"
+            id={`tab-${flow.key}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            aria-controls={`panel-${flow.key}`}
+            tabindex={i === 0 ? 0 : -1}
+          >
+            {flow.name[locale]}
+          </button>
+        ))
+      }
+    </div>
+
+    {
+      flows.map((flow, i) => (
+        <div
+          class:list={['panel', { reveal: i === 0 }]}
+          role="tabpanel"
+          id={`panel-${flow.key}`}
+          aria-labelledby={`tab-${flow.key}`}
+          hidden={i !== 0}
+        >
+          <p class="tagline">{flow.tagline[locale]}</p>
+
+          <div class="diagram-wrap" tabindex="0" role="group" aria-label={`${t('flows.diagramAria')}: ${flow.name[locale]}`}>
+            <svg
+              viewBox="0 0 860 320"
+              aria-hidden="true"
+              class="diagram"
+            >
+              <defs>
+                <marker
+                  id={`arrow-${flow.key}`}
+                  viewBox="0 0 8 8"
+                  refX="7"
+                  refY="4"
+                  markerWidth="6.5"
+                  markerHeight="6.5"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M 0 0 L 8 4 L 0 8 z" class="edge-arrow" />
+                </marker>
+              </defs>
+
+              {/* Groups first, then edges, then boxes: containers stay behind. */}
+              {flow.nodes
+                .filter((node) => node.kind === 'group')
+                .map((node) => (
+                  <g
+                    class="flow-node flow-node--group"
+                    data-node={node.id}
+                    transform={`translate(${node.x} ${node.y})`}
+                  >
+                    <rect width={width(node)} height={height(node)} rx="14" />
+                    {node.icon && (
+                      <Icon name={node.icon} x="14" y="12" width="16" height="16" />
+                    )}
+                    <text x={node.icon ? 38 : 16} y="24" class="node-label">
+                      {node.label[locale]}
+                    </text>
+                    {node.sub && (
+                      <text x={node.icon ? 38 : 16} y="40" class="node-sub">
+                        {node.sub[locale]}
+                      </text>
+                    )}
+                  </g>
+                ))}
+
+              {flow.edges.map((edge, ei) => {
+                const pathId = `${flow.key}-edge-${ei}`;
+                return (
+                  <>
+                    <path
+                      id={pathId}
+                      class="flow-edge"
+                      d={resolveEdgePath(flow.key, edge)}
+                      marker-end={`url(#arrow-${flow.key})`}
+                    />
+                    <circle class="flow-dot" r="4">
+                      <animateMotion
+                        dur="2.8s"
+                        repeatCount="indefinite"
+                        begin={`-${ei * 0.45}s`}
+                      >
+                        <mpath href={`#${pathId}`} />
+                      </animateMotion>
+                    </circle>
+                  </>
+                );
+              })}
+
+              {flow.nodes
+                .filter((node) => node.kind !== 'group')
+                .map((node) => (
+                  <g
+                    class="flow-node"
+                    data-node={node.id}
+                    transform={`translate(${node.x} ${node.y})`}
+                  >
+                    <rect width={width(node)} height={height(node)} rx="10" />
+                    {node.icon && (
+                      <Icon
+                        name={node.icon}
+                        x="14"
+                        y={height(node) / 2 - 9}
+                        width="18"
+                        height="18"
+                      />
+                    )}
+                    <text
+                      x={textX(node)}
+                      y={
+                        node.sub
+                          ? height(node) / 2 - 3
+                          : height(node) / 2 + 4
+                      }
+                      class="node-label"
+                      {...fit(node.label[locale], LABEL_PX_PER_CHAR, node)}
+                    >
+                      {node.label[locale]}
+                    </text>
+                    {node.sub && (
+                      <text
+                        x={textX(node)}
+                        y={height(node) / 2 + 14}
+                        class="node-sub"
+                        {...fit(node.sub[locale], SUB_PX_PER_CHAR, node)}
+                      >
+                        {node.sub[locale]}
+                      </text>
+                    )}
+                  </g>
+                ))}
+            </svg>
+          </div>
+
+          <ol class="steps" aria-label={t('flows.stepsAria')}>
+            {flow.steps.map((step) => (
+              <li data-node={step.node}>{step.text[locale]}</li>
+            ))}
+          </ol>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .hint {
+    max-width: 40rem;
+    color: var(--ink-soft);
+    margin-top: -1.5rem;
+    margin-bottom: 2.25rem;
+  }
+
+  /* ------------------------------- Tabs --------------------------------- */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .tab {
+    padding: 0.55rem 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg-elevated);
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.25s ease, color 0.25s ease,
+      border-color 0.25s ease, transform 0.25s var(--ease-out);
+  }
+
+  .tab:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
+  }
+
+  .tab[aria-selected='true'] {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border-color: var(--accent);
+  }
+
+  /* ------------------------------ Panels -------------------------------- */
+  .panel[hidden] {
+    display: none;
+  }
+
+  .tagline {
+    color: var(--ink-soft);
+    max-width: 44rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .diagram-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background:
+      radial-gradient(var(--line) 1px, transparent 1px) 0 0 / 22px 22px,
+      var(--bg-elevated);
+    padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .diagram {
+    display: block;
+    width: 100%;
+    min-width: 640px;
+    height: auto;
+  }
+
+  /* ------------------------------ Diagram ------------------------------- */
+  .flow-edge {
+    fill: none;
+    stroke: var(--ink-muted);
+    stroke-width: 1.4;
+    stroke-dasharray: 6 6;
+    opacity: 0.65;
+    animation: dash-flow 1.2s linear infinite;
+  }
+
+  .edge-arrow {
+    fill: var(--ink-muted);
+  }
+
+  @keyframes dash-flow {
+    to {
+      stroke-dashoffset: -12;
+    }
+  }
+
+  .flow-dot {
+    fill: var(--ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flow-dot {
+      display: none;
+    }
+
+    .flow-edge {
+      animation: none;
+    }
+  }
+
+  .flow-node rect {
+    fill: var(--bg);
+    stroke: var(--line);
+    stroke-width: 1.2;
+    transition: stroke 0.25s ease, stroke-width 0.25s ease;
+  }
+
+  .flow-node--group rect {
+    fill: transparent;
+  }
+
+  .flow-node--group .node-label {
+    fill: var(--ink-soft);
+  }
+
+  .flow-node.is-active rect,
+  .flow-node:hover rect {
+    stroke: var(--ink);
+    stroke-width: 2;
+  }
+
+  .flow-node :global(svg) {
+    color: var(--ink-soft);
+  }
+
+  .node-label {
+    fill: var(--ink);
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  .node-sub {
+    fill: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+
+  /* ------------------------------- Steps -------------------------------- */
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+    margin-top: 1.75rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 0.9rem;
+  }
+
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding: 0.9rem 1rem 0.9rem 2.9rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg-elevated);
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    cursor: default;
+    transition: border-color 0.25s ease, transform 0.25s var(--ease-out);
+  }
+
+  .steps li:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-3px);
+  }
+
+  .steps li::before {
+    content: counter(step, decimal-leading-zero);
+    position: absolute;
+    left: 1rem;
+    top: 0.95rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+  }
+</style>
+
+<script>
+  // Tab switching (click + arrow keys) and step-to-node highlighting.
+  const section = document.getElementById('sistemas');
+
+  if (section) {
+    const tabs = [...section.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const panels = [
+      ...section.querySelectorAll<HTMLElement>('[role="tabpanel"]'),
+    ];
+
+    const selectTab = (tab: HTMLButtonElement) => {
+      for (const other of tabs) {
+        const selected = other === tab;
+        other.setAttribute('aria-selected', String(selected));
+        other.tabIndex = selected ? 0 : -1;
+      }
+      for (const panel of panels) {
+        panel.hidden = panel.id !== tab.getAttribute('aria-controls');
+      }
+    };
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => selectTab(tab));
+      tab.addEventListener('keydown', (event) => {
+        const delta =
+          event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+        if (!delta) return;
+        event.preventDefault();
+        const next = tabs[(index + delta + tabs.length) % tabs.length];
+        if (next) {
+          next.focus();
+          selectTab(next);
+        }
+      });
+    });
+
+    // Hovering a step highlights its node in the diagram.
+    for (const panel of panels) {
+      const highlight = (nodeId: string | undefined, active: boolean) => {
+        if (!nodeId) return;
+        panel
+          .querySelector(`.flow-node[data-node="${nodeId}"]`)
+          ?.classList.toggle('is-active', active);
+      };
+
+      panel.querySelectorAll<HTMLElement>('.steps li').forEach((step) => {
+        const nodeId = step.dataset.node;
+        step.addEventListener('mouseenter', () => highlight(nodeId, true));
+        step.addEventListener('mouseleave', () => highlight(nodeId, false));
+      });
+    }
+  }
+</script>

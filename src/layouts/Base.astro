@@ -1,0 +1,101 @@
+---
+import '@fontsource-variable/inter';
+import '@fontsource-variable/space-grotesk';
+import '@fontsource/jetbrains-mono/400.css';
+import '../styles/global.css';
+import { contact, profile } from '../data/cv';
+import { resolveLocale, useT } from '../i18n/ui';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const locale = resolveLocale(Astro.currentLocale);
+const t = useT(locale);
+
+const {
+  title = `${contact.shortName} — ${profile[locale].role}`,
+  description = profile[locale].summary,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={locale} class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={contact.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" hreflang="es" href={new URL('/', Astro.site)} />
+    <link rel="alternate" hreflang="en" href={new URL('/en/', Astro.site)} />
+    <script is:inline>
+      // Runs before first paint: resolve theme and mark JS as available.
+      document.documentElement.classList.remove('no-js');
+      const stored = (() => {
+        try {
+          return localStorage.getItem('theme');
+        } catch {
+          return null;
+        }
+      })();
+      const prefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)'
+      ).matches;
+      const theme = stored ?? (prefersDark ? 'dark' : 'light');
+      document.documentElement.dataset.theme = theme;
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">{t('skip.link')}</a>
+    <slot />
+    <script>
+      // Track scroll direction so reveals slide from the direction of travel.
+      let lastY = window.scrollY;
+      document.addEventListener(
+        'scroll',
+        () => {
+          const y = window.scrollY;
+          if (Math.abs(y - lastY) > 2) {
+            document.documentElement.dataset.scrollDir =
+              y > lastY ? 'down' : 'up';
+            lastY = y;
+          }
+        },
+        { passive: true }
+      );
+
+      // Bidirectional scroll reveals: elements animate in when entering and
+      // reset when leaving, so scrolling back up replays the flow.
+      // Skipped entirely for reduced-motion users.
+      const reduceMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches;
+      const targets = document.querySelectorAll<HTMLElement>('.reveal');
+
+      if (reduceMotion) {
+        targets.forEach((el) => el.classList.add('is-visible'));
+      } else {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              entry.target.classList.toggle(
+                'is-visible',
+                entry.isIntersecting
+              );
+            }
+          },
+          // threshold 0 keeps tall elements visible while any part remains
+          // inside the (slightly shrunk) viewport box.
+          { threshold: 0, rootMargin: '0px 0px -6% 0px' }
+        );
+        targets.forEach((el) => observer.observe(el));
+      }
+    </script>
+  </body>
+</html>

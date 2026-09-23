@@ -1,0 +1,235 @@
+---
+import { contact, profile } from '../data/cv';
+import { resolveLocale, useT } from '../i18n/ui';
+
+const locale = resolveLocale(Astro.currentLocale);
+const t = useT(locale);
+const { role, summary, rotating } = profile[locale];
+---
+
+<section id="top" class="hero">
+  <div class="container">
+    <p class="kicker reveal">
+      <span class="pulse-dot" aria-hidden="true"></span>
+      {contact.location} · {t('hero.available')}
+    </p>
+
+    <h1 class="reveal" style="--reveal-delay: 0.08s">
+      {contact.shortName}
+    </h1>
+
+    <p class="role reveal" style="--reveal-delay: 0.16s">{role}</p>
+
+    <p class="rotating reveal" style="--reveal-delay: 0.2s">
+      {t('hero.rotating.prefix')}
+      <span
+        class="rotating-word"
+        id="rotating-word"
+        data-words={JSON.stringify(rotating)}>{rotating[0]}</span
+      >
+    </p>
+
+    <p class="summary reveal" style="--reveal-delay: 0.24s">
+      {summary}
+    </p>
+
+    <div class="actions reveal" style="--reveal-delay: 0.32s">
+      <a class="btn btn-solid" href={`mailto:${contact.email}`}>
+        {t('hero.cta.email')}
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14m-6-6 6 6-6 6"></path>
+        </svg>
+      </a>
+      <a
+        class="btn btn-ghost"
+        href={contact.linkedin}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {t('hero.cta.linkedin')}
+        <span class="visually-hidden">{t('a11y.newTab')}</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    padding-block: clamp(5rem, 13vw, 9rem);
+    overflow: hidden;
+  }
+
+  /* Subtle dot grid, fading toward the bottom */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(var(--line) 1px, transparent 1px) 0 0 / 26px
+      26px;
+    mask-image: linear-gradient(to bottom, black 0%, transparent 82%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 82%);
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative;
+  }
+
+  .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--ink);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--ink) 35%, transparent);
+    }
+    50% {
+      opacity: 0.55;
+      box-shadow: 0 0 0 6px transparent;
+    }
+  }
+
+  h1 {
+    font-size: clamp(2.75rem, 9vw, 6rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    margin-bottom: 0.75rem;
+  }
+
+  .role {
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 3vw, 1.6rem);
+    color: var(--ink-soft);
+    margin-bottom: 0.75rem;
+  }
+
+  .rotating {
+    font-family: var(--font-mono);
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    color: var(--ink-muted);
+    margin-bottom: 2rem;
+  }
+
+  .rotating-word {
+    display: inline-block;
+    color: var(--ink);
+    border-bottom: 1px solid var(--ink);
+    transition: opacity 0.3s ease, transform 0.3s var(--ease-out);
+  }
+
+  .rotating-word.is-leaving {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  .summary {
+    max-width: 46rem;
+    font-size: clamp(1rem, 2vw, 1.1rem);
+    color: var(--ink-soft);
+    margin-bottom: 2.75rem;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.6rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: transform 0.25s var(--ease-out), box-shadow 0.25s ease,
+      background-color 0.25s ease, color 0.25s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  .btn-solid {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .btn-solid:hover {
+    box-shadow: var(--shadow);
+  }
+
+  .btn-solid svg {
+    transition: transform 0.25s var(--ease-out);
+  }
+
+  .btn-solid:hover svg {
+    transform: translateX(3px);
+  }
+
+  .btn-ghost {
+    border: 1px solid var(--line-strong);
+  }
+
+  .btn-ghost:hover {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+</style>
+
+<script>
+  // Rotating word cycle; static for reduced-motion users.
+  const el = document.getElementById('rotating-word');
+  const reduceMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+
+  if (el && !reduceMotion) {
+    const words: string[] = JSON.parse(el.dataset.words ?? '[]');
+    let index = 0;
+
+    if (words.length > 1) {
+      setInterval(() => {
+        el.classList.add('is-leaving');
+        setTimeout(() => {
+          index = (index + 1) % words.length;
+          el.textContent = words[index] ?? '';
+          el.classList.remove('is-leaving');
+        }, 300);
+      }, 2600);
+    }
+  }
+</script>

@@ -1,0 +1,228 @@
+---
+import { Icon } from 'astro-icon/components';
+import { contact } from '../data/cv';
+import { resolveLocale, useT } from '../i18n/ui';
+
+const locale = resolveLocale(Astro.currentLocale);
+const t = useT(locale);
+const year = new Date().getFullYear();
+
+const socialLinks = [
+  {
+    href: contact.linkedin,
+    label: 'LinkedIn',
+    icon: 'lucide:linkedin',
+  },
+  {
+    href: contact.instagram,
+    label: contact.instagramLabel,
+    icon: 'lucide:instagram',
+  },
+  {
+    href: contact.website,
+    label: contact.websiteLabel,
+    icon: 'lucide:globe',
+  },
+];
+---
+
+<footer id="contacto" class="footer" aria-labelledby="contacto-title">
+  <div class="container">
+    <h2 id="contacto-title" class="reveal">{t('footer.title')}</h2>
+    <p class="reveal" style="--reveal-delay: 0.1s">
+      {t('footer.pitch')}
+    </p>
+
+    <div class="email-row reveal" style="--reveal-delay: 0.2s">
+      <a class="email-link" href={`mailto:${contact.email}`}>
+        {contact.email}
+      </a>
+      <button
+        id="copy-email"
+        class="copy-btn"
+        type="button"
+        data-email={contact.email}
+        data-copied-label={t('footer.copied')}
+      >
+        <Icon name="lucide:copy" width="15" height="15" aria-hidden="true" />
+        <span class="copy-label">{t('footer.copy')}</span>
+      </button>
+    </div>
+
+    <div class="meta reveal" style="--reveal-delay: 0.3s">
+      <ul class="links">
+        {
+          socialLinks.map((link) => (
+            <li>
+              <a
+                class="social-link"
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Icon name={link.icon} width="16" height="16" aria-hidden="true" />
+                {link.label}
+                <span class="visually-hidden">{t('a11y.newTab')}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="copyright">
+        © {year} {contact.name} · {contact.location}
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--line);
+    padding-block: clamp(4rem, 10vw, 7rem) 2.5rem;
+    text-align: center;
+  }
+
+  h2 {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    letter-spacing: -0.025em;
+    margin-bottom: 1rem;
+  }
+
+  .footer > .container > p {
+    color: var(--ink-soft);
+    max-width: 34rem;
+    margin-inline: auto;
+    margin-bottom: 2.5rem;
+  }
+
+  .email-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg-elevated);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: border-color 0.25s ease, transform 0.25s var(--ease-out);
+  }
+
+  .copy-btn:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
+  }
+
+  .copy-btn.is-copied {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border-color: var(--accent);
+  }
+
+  .email-link {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 3.5vw, 1.75rem);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.9rem 2rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    transition: background-color 0.3s ease, color 0.3s ease,
+      transform 0.3s var(--ease-out);
+  }
+
+  .email-link:hover {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    transform: translateY(-3px);
+  }
+
+  .meta {
+    margin-top: 4rem;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .links {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.75rem;
+    font-size: 0.92rem;
+  }
+
+  .social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: var(--ink-soft);
+    transition: color 0.25s ease, transform 0.25s var(--ease-out);
+  }
+
+  .social-link:hover {
+    color: var(--ink);
+    transform: translateY(-2px);
+  }
+
+  .social-link :global(svg) {
+    opacity: 0.75;
+  }
+
+  .copyright {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+</style>
+
+<script>
+  // Copy-to-clipboard fallback for visitors without a configured mail client
+  // (a bare mailto: opens an empty tab for them).
+  const button = document.getElementById('copy-email');
+  const label = button?.querySelector('.copy-label');
+  let resetTimer: ReturnType<typeof setTimeout> | undefined;
+
+  button?.addEventListener('click', async () => {
+    const email = button.dataset.email ?? '';
+    const copiedLabel = button.dataset.copiedLabel ?? '';
+    const originalLabel = label?.textContent ?? '';
+
+    try {
+      await navigator.clipboard.writeText(email);
+    } catch {
+      // Clipboard API unavailable (insecure context / old browser):
+      // fall back to a temporary selectable input.
+      const input = document.createElement('input');
+      input.value = email;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      input.remove();
+    }
+
+    if (label) {
+      label.textContent = copiedLabel;
+      button.classList.add('is-copied');
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => {
+        label.textContent = originalLabel;
+        button.classList.remove('is-copied');
+      }, 2000);
+    }
+  });
+</script>

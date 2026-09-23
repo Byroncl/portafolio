@@ -1,0 +1,90 @@
+---
+import { Icon } from 'astro-icon/components';
+import { stack, stackItemName } from '../data/cv';
+import SectionHeading from './SectionHeading.astro';
+import { resolveLocale, useT } from '../i18n/ui';
+
+const locale = resolveLocale(Astro.currentLocale);
+const t = useT(locale);
+---
+
+<section id="stack" class="section" aria-labelledby="stack-title">
+  <div class="container">
+    <SectionHeading index="04" title={t('section.stack')} id="stack-title" />
+
+    <div class="groups">
+      {
+        stack.map((group, index) => (
+          <div class="group reveal" style={`--reveal-delay: ${index * 0.06}s`}>
+            <h3>{group.label[locale]}</h3>
+            <ul class="tags">
+              {group.items.map((item) => (
+                <li class="tag tag-icon">
+                  <Icon name={item.icon} width="15" height="15" aria-hidden="true" />
+                  {stackItemName(item.name, locale)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .groups {
+    display: grid;
+    gap: 2.25rem;
+  }
+
+  .group {
+    display: grid;
+    grid-template-columns: minmax(10rem, 14rem) 1fr;
+    gap: 1rem 2rem;
+    align-items: start;
+    padding-bottom: 2.25rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+
+  .tags {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .tag-icon :global(svg) {
+    flex-shrink: 0;
+    opacity: 0.75;
+    transition: opacity 0.25s ease;
+  }
+
+  .tag-icon:hover :global(svg) {
+    opacity: 1;
+  }
+
+  @media (max-width: 640px) {
+    .group {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+  }
+</style>

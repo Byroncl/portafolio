@@ -1,0 +1,92 @@
+---
+import { education } from '../data/cv';
+import SectionHeading from './SectionHeading.astro';
+import { resolveLocale, useT } from '../i18n/ui';
+
+const locale = resolveLocale(Astro.currentLocale);
+const t = useT(locale);
+const { degree, school, credentials, languages } = education[locale];
+---
+
+<section id="educacion" class="section" aria-labelledby="educacion-title">
+  <div class="container">
+    <SectionHeading
+      index="05"
+      title={t('section.education')}
+      id="educacion-title"
+    />
+
+    <div class="columns">
+      <div class="block reveal">
+        <h3>{t('education.training')}</h3>
+        <p class="degree">{degree}</p>
+        <p class="school">{school}</p>
+      </div>
+
+      <div class="block reveal" style="--reveal-delay: 0.1s">
+        <h3>{t('education.credentials')}</h3>
+        <ul>
+          {credentials.map((credential) => <li>{credential}</li>)}
+        </ul>
+      </div>
+
+      <div class="block reveal" style="--reveal-delay: 0.2s">
+        <h3>{t('education.languages')}</h3>
+        <ul>
+          {languages.map((language) => <li>{language}</li>)}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 2rem;
+  }
+
+  .block h3 {
+    font-size: 0.85rem;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    margin-bottom: 1rem;
+  }
+
+  .degree {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .school {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  li {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    padding-left: 1.1rem;
+    position: relative;
+  }
+
+  li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--ink-muted);
+  }
+</style>
