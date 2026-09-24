@@ -71,7 +71,7 @@ export const experience: Record<Locale, ExperienceEntry[]> = {
         {
           title: 'Liderazgo técnico',
           description:
-            'Mentoreé a dos desarrolladores y revisé sus pull requests dentro de un equipo de 4 devs más QA y PM; definí criterios de aceptación, documenté flujos de casos de uso y reporté bugs críticos y hallazgos de seguridad en auditorías de API.',
+            'Mentoreé a desarrolladores y revisé sus pull requests dentro de un equipo de devs más QA y PM; definí criterios de aceptación, documenté flujos de casos de uso y reporté bugs críticos y hallazgos de seguridad en auditorías de API.',
         },
         {
           title: 'Plataforma interna de pruebas',
@@ -151,7 +151,7 @@ export const experience: Record<Locale, ExperienceEntry[]> = {
         {
           title: 'Technical leadership',
           description:
-            'Mentored two developers and reviewed their pull requests within a team of 4 devs plus QA and PM; defined acceptance criteria, documented use-case flows, and reported critical bugs and security findings in API audits.',
+            'Mentored developers and reviewed their pull requests within a team of devs plus QA and PM; defined acceptance criteria, documented use-case flows, and reported critical bugs and security findings in API audits.',
         },
         {
           title: 'Internal testing platform',
