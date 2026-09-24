@@ -1,0 +1,8 @@
+services:
+  portfolio:
+    build: .
+    image: byron-portfolio:latest
+    container_name: byron-portfolio
+    ports:
+      - "3029:3029"
+    restart: unless-stopped

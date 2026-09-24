@@ -1,0 +1,12 @@
+node_modules
+dist
+.astro
+.git
+.atl
+.env
+.env.*
+!.env.example
+npm-debug.log*
+Dockerfile
+docker-compose.yml
+README.md
